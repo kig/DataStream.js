@@ -228,6 +228,7 @@ DataStream.prototype.mapFloat32Array = function(length, e) {
 
 
 DataStream.prototype.readInt32Array = function(length, e) {
+  length = length == null ? (this.byteLength-this.position / 4) : length;
   var arr = new Int32Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readInt32(e);
@@ -236,6 +237,7 @@ DataStream.prototype.readInt32Array = function(length, e) {
 };
 
 DataStream.prototype.readInt16Array = function(length, e) {
+  length = length == null ? (this.byteLength-this.position / 2) : length;
   var arr = new Int16Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readInt16(e);
@@ -244,6 +246,7 @@ DataStream.prototype.readInt16Array = function(length, e) {
 };
 
 DataStream.prototype.readInt8Array = function(length) {
+  length = length == null ? (this.byteLength-this.position) : length;
   var arr = new Int8Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readInt8();
@@ -252,6 +255,7 @@ DataStream.prototype.readInt8Array = function(length) {
 };
 
 DataStream.prototype.readUint32Array = function(length, e) {
+  length = length == null ? (this.byteLength-this.position / 4) : length;
   var arr = new Uint32Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readUint32(e);
@@ -260,6 +264,7 @@ DataStream.prototype.readUint32Array = function(length, e) {
 };
 
 DataStream.prototype.readUint16Array = function(length, e) {
+  length = length == null ? (this.byteLength-this.position / 2) : length;
   var arr = new Uint16Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readUint16(e);
@@ -268,6 +273,7 @@ DataStream.prototype.readUint16Array = function(length, e) {
 };
 
 DataStream.prototype.readUint8Array = function(length) {
+  length = length == null ? (this.byteLength-this.position) : length;
   var arr = new Uint8Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readUint8();
@@ -276,6 +282,7 @@ DataStream.prototype.readUint8Array = function(length) {
 };
 
 DataStream.prototype.readFloat64Array = function(length, e) {
+  length = length == null ? (this.byteLength-this.position / 8) : length;
   var arr = new Float64Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readFloat64(e);
@@ -284,6 +291,7 @@ DataStream.prototype.readFloat64Array = function(length, e) {
 };
 
 DataStream.prototype.readFloat32Array = function(length, e) {
+  length = length == null ? (this.byteLength-this.position / 4) : length;
   var arr = new Float32Array(length);
   for (var i=0; i<length; i++) {
     arr[i] = this.readFloat32(e);
@@ -516,7 +524,9 @@ DataStream.prototype.writeUTF16String = function(str, endianness, lengthOverride
 
 DataStream.prototype.readString = function(length, encoding) {
   if (encoding == null || encoding == "ASCII") {
-    return String.fromCharCode.apply(null, this.mapUint8Array(length));
+    return String.fromCharCode.apply(null, this.mapUint8Array(length == null ? this.byteLength-this.position : length));
+  } else {
+    throw("Unsupported encoding " + encoding);
   }
 };
 
@@ -673,6 +683,9 @@ DataStream.prototype.readType = function(t, struct) {
           } else if (/be$/.test(ta)) {
             endianness = DataStream.BIG_ENDIAN;
           }
+          if (len == '*') {
+            length = null;
+          }
           switch(tap) {
             case 'uint8':
               v = this.readUint8Array(length); break;
@@ -693,9 +706,18 @@ DataStream.prototype.readType = function(t, struct) {
             case 'cstring':
             case 'utf16string':
             case 'string':
-              v = new Array(length);
-              for (var i=0; i<length; i++) {
-                v[i] = this.readType(ta, struct);
+              if (length == null) {
+                v = [];
+                while (!this.isEof()) {
+                  var u = this.readType(ta, struct);
+		  if (u == null) break;
+		  v.push(u);
+                }
+              } else {
+                v = new Array(length);
+                for (var i=0; i<length; i++) {
+                  v[i] = this.readType(ta, struct);
+                }
               }
               break;
           }

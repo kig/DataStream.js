@@ -1,6 +1,6 @@
-<!doctype html>
 <html>
   <head>
+    <script src="structdef.js"></script>
     <script src="DataStream.js"></script>
   </head>
   <body>
@@ -11,6 +11,34 @@
     <script>
 document.querySelector('input[type="file"]').onchange = function(e) {
   var reader = new FileReader();
+
+/* Old structdef.js JPEG parser, compared to DataStream, guards are nice. */
+/*
+  var jpegMarkerDef = [
+    { tag: 'uint16=0xFFE1', // EXIF 
+      length: 'uint16',
+      exif: 'string:6=Exif\000\000',
+      data: ['uint8', 'length-8']
+    },
+    {
+      tag: 'uint16!=0xFFDA',
+      length: 'uint16',
+      data: ['uint8', 'length-2']
+    }
+  ];
+
+  var jpegImageStream = {
+    tag: 'uint16=0xFFDA',
+    data: ['uint8', -2]
+  };
+
+  var jpegDef = {
+    start: 'uint16=0xFFD8',
+    markers: [jpegMarkerDef, '*'],
+    image: jpegImageStream,
+    end: 'uint16=0xFFD9'
+  };
+*/
 
   var tiffByteSize = {
     1:1, 2:1, 3:2, 4:4, 5:8, 6:1, 7:1, 8:2, 9:4, 10:8, 11:4, 12:8
@@ -42,7 +70,7 @@ document.querySelector('input[type="file"]').onchange = function(e) {
       }
       ds.position = p + 4;
       if (v.length && s.type != 2) {
-        v = '['+v.length+']';
+        v = Array.prototype.join.call(v);
       }
       return v;
     }
@@ -76,24 +104,151 @@ document.querySelector('input[type="file"]').onchange = function(e) {
     return rv;
   };
 
+  var jpegMarkers = {
+    // Huffman coding SOFs
+    0xFFC0: "SOF0", // baseline DCT
+    0xFFC1: "SOF1", // extended sequential DCT
+    0xFFC2: "SOF2", // progressive DCT
+    0xFFC3: "SOF3", // lossless (sequential)
+
+    0xFFC5: "SOF5", // differential sequential DCT
+    0xFFC6: "SOF6", // differential progressive DCT
+    0xFFC7: "SOF7", // differential lossless (sequential)
+
+    // Arithmetic coding SOFs
+    0xFFC8: "JPG", // reserved
+    0xFFC9: "SOF9", // extended sequential DCT
+    0xFFCA: "SOF10", // progressive DCT
+    0xFFCB: "SOF11", // lossless sequential
+
+    0xFFCD: "SOF13", // differential sequential DCT
+    0xFFCE: "SOF14", // differential progressive DCT
+    0xFFCF: "SOF15", // differential lossless DCT
+
+    0xFFC4: "DHT", // Define Huffman table(s)
+    0xFFCC: "DAC", // Define arithmetic coding conditioning(s)
+
+    // Restart interval termination
+    0xFFD0: "RST0",
+    0xFFD1: "RST1",
+    0xFFD2: "RST2",
+    0xFFD3: "RST3",
+    0xFFD4: "RST4",
+    0xFFD5: "RST5",
+    0xFFD6: "RST6",
+    0xFFD7: "RST7",
+
+    // other markers
+    0xFFD8: "SOI", // start of image
+    0xFFD9: "EOI", // end of image
+    0xFFDA: "SOS", // start of scan
+    0xFFDB: "DQT", // define quantization table(s)
+    0xFFDC: "DNL", // define number of lines
+    0xFFDE: "DHP", // define hierarchical progression
+    0xFFDF: "EXP", // expand reference component(s)
+
+    // APP markers
+    0xFFE0: "APP0",
+    0xFFE1: "APP1",
+    0xFFE2: "APP2",
+    0xFFE3: "APP3",
+    0xFFE4: "APP4",
+    0xFFE5: "APP5",
+    0xFFE6: "APP6",
+    0xFFE7: "APP7",
+    0xFFE8: "APP8",
+    0xFFE9: "APP9",
+    0xFFEA: "APP10",
+    0xFFEB: "APP11",
+    0xFFEC: "APP12",
+    0xFFED: "APP13",
+    0xFFEE: "APP14",
+    0xFFEF: "APP15",
+
+    // JPEG extensions
+    0xFFF0: "JPG0",
+    0xFFF1: "JPG1",
+    0xFFF2: "JPG2",
+    0xFFF3: "JPG3",
+    0xFFF4: "JPG4",
+    0xFFF5: "JPG5",
+    0xFFF6: "JPG6",
+    0xFFF7: "JPG7",
+    0xFFF8: "JPG8",
+    0xFFF9: "JPG9",
+    0xFFFA: "JPG10",
+    0xFFFB: "JPG11",
+    0xFFFC: "JPG12",
+    0xFFFD: "JPG13",
+
+    0xFFFE: "COM", // comment
+
+    0xFF01: "TEM*" // For temporary private use in arithmetic coding
+  };
+
   var jpegStruct = [
       'start', function(ds){ var t = ds.readUint16(); return t == 0xFFD8 ? t : null; },
       'markers', ['[]', [
         'tag', function(ds){ var t = ds.readUint16(); return t == 0xFFD9 ? null : t; },
+        'tagName', function(ds, s) { return jpegMarkers[s.tag]; },
         'length', 'uint16be',
         'data', {
           get: function(ds, s) {
-            if (s.tag == 0xFFE1) { // EXIF
+            switch (s.tag) {
+            case 0xFFE1: // EXIF
               var exif = ds.readString(6);
               if (exif == 'Exif\000\000') {
                 // parse rest of Exif
                 return { exif: exif, data: parseTIFF(ds.mapUint8Array(s.length - 8)) };
               } else {
-                ds.position -= 6;
+                ds.position -= exif.length;
+                var xmp = ds.readCString();
+                if (xmp == "http://ns.adobe.com/xap/1.0/") {
+                  return { xmp: xmp, data: ds.readString(s.length-2-xmp.length-1) };
+                } else {
+                  ds.position -= xmp.length+1;
+                  return ds.mapUint8Array(s.length - 2).length;
+                }
+              }
+              break;
+            case 0xFFE0: // APP0
+              if (s.length >= 7) { // probably a JFIF
+                var p = ds.position;
+                var jfif = ds.readCString(5);
+                if (jfif == 'JFIF' || jfif == 'JFXX') {
+                  var jfifStruct = [
+	            'majorVersion', 'uint8',
+                    'minorVersion', 'uint8',
+                    'units', 'uint8',
+                    'xDensity', 'uint16',
+                    'yDensity', 'uint16',
+                    'thumbnail', [
+                      'width', 'uint8',
+                      'height', 'uint8',
+                      'data', ['[]', 'uint8', '*']]];
+                  if (jfif == 'JFXX') {
+	            jfifStruct.unshift('extensionCode', 'uint8');
+                  }
+                  var u8 = ds.mapUint8Array(s.length-7);
+                  var rv = new DataStream(u8, null, DataStream.BIG_ENDIAN).readStruct(jfifStruct);
+                  if (!rv) {
+                    ds.position = p;
+                    return ds.readString(s.length-2);
+                  }
+                  return {jfif: jfif, data: rv};
+                } else {
+                  ds.position -= 5;
+                  return ds.readString(s.length-2);
+                }
+              } else {
                 return ds.mapUint8Array(s.length - 2).length;
               }
-            } else if (s.tag == 0xFFDA) {
-              // image stream
+              break;
+            case 0xFFE2: // APP2, ICC Profile most likely
+              return ds.readString(s.length-2);
+            case 0xFFED: // APP13, IPTC / Photoshop IRB
+              return ds.readString(s.length-2);
+            case 0xFFDA: // image stream
               var p = ds.position;
               var cmpCount = ds.readUint8();
               var cs = [];
@@ -110,8 +265,10 @@ document.querySelector('input[type="file"]').onchange = function(e) {
               }
               ds.position = p;
               return {components: cs, imageData: ds.mapUint8Array(i-1).length};
-            } else {
+              break;
+            default:
               return ds.mapUint8Array(s.length - 2).length;
+              break;
             }
           }
         }
@@ -123,7 +280,11 @@ document.querySelector('input[type="file"]').onchange = function(e) {
     var ds = new DataStream(this.result);
     ds.endianness = DataStream.BIG_ENDIAN;
     var obj = ds.readStruct(jpegStruct) || parseTIFF(this.result);
+//    var dv = new DataView(this.result);
+
+//    var idx = [0];
     pre = document.querySelector('pre');
+//    var obj = readStruct(dv, idx, jpegDef);
     if (obj) { 
       pre.textContent = JSON.stringify(obj, null, 4);
     } else {
