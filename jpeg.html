@@ -1,0 +1,139 @@
+<!doctype html>
+<html>
+  <head>
+    <script src="DataStream.js"></script>
+  </head>
+  <body>
+    <h1>JPEG marker reader</h1>
+    <h3>Select a JPEG or TIFF file</h3>
+    <input type="file"><br>
+    <pre></pre>
+    <script>
+document.querySelector('input[type="file"]').onchange = function(e) {
+  var reader = new FileReader();
+
+  var tiffByteSize = {
+    1:1, 2:1, 3:2, 4:4, 5:8, 6:1, 7:1, 8:2, 9:4, 10:8, 11:4, 12:8
+  };
+
+  var tiffTag = [
+    'tag', 'uint16',
+    'type', 'uint16',
+    'count', 'uint32',
+    'value', function(ds, s) {
+      var p = ds.position;
+      if (s.count * tiffByteSize[s.type] > 4) {
+        ds.seek(ds.readUint32());
+      }
+      var v = {error: 'Unknown TIFF Field'};
+      switch (s.type) {
+        case 1: v = ds.readUint8Array(s.count); break;
+        case 2: v = ds.readString(s.count); break; 
+        case 3: v = ds.readUint16Array(s.count); break; 
+        case 4: v = ds.readUint32Array(s.count); break; 
+        case 5: v = ds.readUint32Array(2*s.count); break; 
+        case 6: v = ds.readInt8Array(s.count); break; 
+        case 7: v = ds.readInt8Array(s.count); break; 
+        case 8: v = ds.readInt16Array(s.count); break; 
+        case 9: v = ds.readInt32Array(s.count); break; 
+        case 10: v = ds.readInt32Array(2*s.count); break; 
+        case 11: v = ds.readFloat32(s.count); break; 
+        case 12: v = ds.readFloat64(s.count); break; 
+      }
+      ds.position = p + 4;
+      if (v.length && s.type != 2) {
+        v = '['+v.length+']';
+      }
+      return v;
+    }
+  ];
+
+  var parseTIFF = function(u8) {
+    var rv = {};
+    var ds = new DataStream(u8);
+    rv.endianness = ds.readString(2);
+    ds.endianness = rv.endianness == 'MM' ? DataStream.BIG_ENDIAN : DataStream.LITTLE_ENDIAN;
+    rv.magic = ds.readUint16();
+    if (rv.magic != 42) return null;
+    rv.firstOff = ds.readUint32();
+    ds.seek(rv.firstOff);
+    var h = [];
+    rv.entries = h;
+    rv.dirOffsets = [];
+    while (true) {
+      numEntries = ds.readUint16();
+      for (var i = 0; i<numEntries; i++) {
+        h.push(ds.readStruct(tiffTag));
+      }
+      nextOff = ds.readUint32();
+      if (nextOff) {
+        ds.seek(nextOff);
+        rv.dirOffsets.push(nextOff);
+      } else {
+        break;
+      }
+    }
+    return rv;
+  };
+
+  var jpegStruct = [
+      'start', function(ds){ var t = ds.readUint16(); return t == 0xFFD8 ? t : null; },
+      'markers', ['[]', [
+        'tag', function(ds){ var t = ds.readUint16(); return t == 0xFFD9 ? null : t; },
+        'length', 'uint16be',
+        'data', {
+          get: function(ds, s) {
+            if (s.tag == 0xFFE1) { // EXIF
+              var exif = ds.readString(6);
+              if (exif == 'Exif\000\000') {
+                // parse rest of Exif
+                return { exif: exif, data: parseTIFF(ds.mapUint8Array(s.length - 8)) };
+              } else {
+                ds.position -= 6;
+                return ds.mapUint8Array(s.length - 2).length;
+              }
+            } else if (s.tag == 0xFFDA) {
+              // image stream
+              var p = ds.position;
+              var cmpCount = ds.readUint8();
+              var cs = [];
+              for (var i=0; i<cmpCount; i++) {
+                cs.push({id: ds.readUint8(), huffmanTable: ds.readUint8()});
+              }
+              ds.position = p + s.length;
+              p = ds.position;
+              var u8 = ds.mapUint8Array(ds.byteLength-ds.position);
+              for (var i=1; i<u8.length; i++) {
+                if (u8[i-1] == 0xFF && u8[i] == 0xD9) {
+                  break;
+                }
+              }
+              ds.position = p;
+              return {components: cs, imageData: ds.mapUint8Array(i-1).length};
+            } else {
+              return ds.mapUint8Array(s.length - 2).length;
+            }
+          }
+        }
+      ], '*'],
+      'end', function(ds){ var t = ds.readUint16(); return t == 0xFFD9 ? t : null; }
+  ];
+
+  reader.onload = function(e) {
+    var ds = new DataStream(this.result);
+    ds.endianness = DataStream.BIG_ENDIAN;
+    var obj = ds.readStruct(jpegStruct) || parseTIFF(this.result);
+    pre = document.querySelector('pre');
+    if (obj) { 
+      pre.textContent = JSON.stringify(obj, null, 4);
+    } else {
+      pre.textContent = "Failed to parse JPEG at "+ds.failurePosition+" :(";
+    }
+  };
+
+  reader.readAsArrayBuffer(this.files[0]);
+};
+
+    </script>
+  </body>
+</html>
