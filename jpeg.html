@@ -115,6 +115,7 @@ document.querySelector('input[type="file"]').onchange = function(e) {
     0xFFDA: "SOS", // start of scan
     0xFFDB: "DQT", // define quantization table(s)
     0xFFDC: "DNL", // define number of lines
+    0xFFDD: "DRI", // define restart interval
     0xFFDE: "DHP", // define hierarchical progression
     0xFFDF: "EXP", // expand reference component(s)
 
@@ -161,7 +162,7 @@ document.querySelector('input[type="file"]').onchange = function(e) {
       'start', function(ds){ var t = ds.readUint16(); return t == 0xFFD8 ? t : null; },
       'markers', ['[]', [
         'tag', function(ds){ var t = ds.readUint16(); return t == 0xFFD9 ? null : t; },
-        'tagName', function(ds, s) { return jpegMarkers[s.tag] || ""; },
+        'tagName', function(ds, s) { return jpegMarkers[s.tag] || "Unknown"; },
         'length', 'uint16be',
         'data', {
           get: function(ds, s) {
