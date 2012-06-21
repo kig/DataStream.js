@@ -190,7 +190,7 @@ document.querySelector('input[type="file"]').onchange = function(e) {
       'start', function(ds){ var t = ds.readUint16(); return t == 0xFFD8 ? t : null; },
       'markers', ['[]', [
         'tag', function(ds){ var t = ds.readUint16(); return t == 0xFFD9 ? null : t; },
-        'tagName', function(ds, s) { return jpegMarkers[s.tag]; },
+        'tagName', function(ds, s) { return jpegMarkers[s.tag] || ""; },
         'length', 'uint16be',
         'data', {
           get: function(ds, s) {
