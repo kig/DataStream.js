@@ -220,6 +220,8 @@ document.querySelector('input[type="file"]').onchange = function(e) {
               return ds.readString(s.length-2);
             case 0xFFED: // APP13, IPTC / Photoshop IRB
               return ds.readString(s.length-2);
+            case 0xFFDD: // DRI
+              return s.length == 4 ? ds.readUint16() : ds.mapUint8Array(s.length-2).length;
             case 0xFFDA: // image stream
               var p = ds.position;
               var cmpCount = ds.readUint8();
