@@ -526,7 +526,7 @@ DataStream.prototype.readString = function(length, encoding) {
   if (encoding == null || encoding == "ASCII") {
     return String.fromCharCode.apply(null, this.mapUint8Array(length == null ? this.byteLength-this.position : length));
   } else {
-    throw("Unsupported encoding " + encoding);
+    return (new TextDecoder(encoding)).decode(this.mapUint8Array(length));
   }
 };
 
@@ -547,6 +547,8 @@ DataStream.prototype.writeString = function(s, encoding, length) {
       }
       this.writeUint8(0);
     }
+  } else {
+    this.writeUint8Array((new TextEncoder(encoding)).encode(string.substring(0, length)));
   }
 };
 
