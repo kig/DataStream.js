@@ -548,7 +548,7 @@ DataStream.prototype.writeString = function(s, encoding, length) {
       this.writeUint8(0);
     }
   } else {
-    this.writeUint8Array((new TextEncoder(encoding)).encode(string.substring(0, length)));
+    this.writeUint8Array((new TextEncoder(encoding)).encode(s.substring(0, length)));
   }
 };
 

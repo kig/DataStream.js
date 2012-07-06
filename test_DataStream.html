@@ -505,6 +505,22 @@
   dss.buffer;
   assertEqual(s, dss.readCString());
 
+  var dss = new DataStream();
+  var s = "Hello, 世界";
+  dss.writeString(s, 'UTF-8');
+  var bl = dss.byteLength;
+  dss.seek(0);
+  assertEqual(s, dss.readString(dss.byteLength, 'UTF-8'));
+  // ugh, byte-counted UTF-8 strings :(
+
+  var dss = new DataStream();
+  var s = "Hello, me";
+  dss.writeString(s, 'UTF-8');
+  assertNotEqual(bl, dss.byteLength);
+  dss.seek(0);
+  assertEqual(s, dss.readString(dss.byteLength, 'UTF-8'));
+
+
   var p = document.createElement('p');
   p.textContent = 'tests passed';
   document.body.appendChild(p);
