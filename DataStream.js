@@ -25,11 +25,13 @@ DataStream.prototype = {};
 
 /**
   Big-endian const to use as default endianness.
+  @type {boolean}
   */
 DataStream.BIG_ENDIAN = false;
 
 /**
   Little-endian const to use as default endianness.
+  @type {boolean}
   */
 DataStream.LITTLE_ENDIAN = true;
 
@@ -37,6 +39,7 @@ DataStream.LITTLE_ENDIAN = true;
   Whether to extend DataStream buffer when trying to write beyond its size.
   If set, the buffer is reallocated to twice its current size until the
   requested write fits the buffer.
+  @type {boolean}
   */
 DataStream.prototype._dynamicSize = true;
 Object.defineProperty(DataStream.prototype, 'dynamicSize',
@@ -54,11 +57,13 @@ Object.defineProperty(DataStream.prototype, 'dynamicSize',
   Virtual byte length of the DataStream backing buffer.
   Updated to be max of original buffer size and last written size.
   If dynamicSize is false is set to buffer size.
+  @type {number}
   */
 DataStream.prototype._byteLength = 0;
 
 /**
   Returns the byte length of the DataStream object.
+  @type {number}
   */
 Object.defineProperty(DataStream.prototype, 'byteLength',
   { get: function() {
@@ -68,6 +73,7 @@ Object.defineProperty(DataStream.prototype, 'byteLength',
 /**
   Set/get the backing ArrayBuffer of the DataStream object.
   The setter updates the DataView to point to the new buffer.
+  @type {Object}
   */
 Object.defineProperty(DataStream.prototype, 'buffer',
   { get: function() {
@@ -83,6 +89,7 @@ Object.defineProperty(DataStream.prototype, 'buffer',
 /**
   Set/get the byteOffset of the DataStream object.
   The setter updates the DataView to point to the new byteOffset.
+  @type {number}
   */
 Object.defineProperty(DataStream.prototype, 'byteOffset',
   { get: function() {
@@ -97,6 +104,7 @@ Object.defineProperty(DataStream.prototype, 'byteOffset',
 /**
   Set/get the backing DataView of the DataStream object.
   The setter updates the buffer and byteOffset to point to the DataView values.
+  @type {Object}
   */
 Object.defineProperty(DataStream.prototype, 'dataView',
   { get: function() {
@@ -109,6 +117,11 @@ Object.defineProperty(DataStream.prototype, 'dataView',
       this._byteLength = this._byteOffset + v.byteLength;
     } });
 
+/**
+  Internal function to resize the DataStream buffer when required.
+  @param {number} extra Number of bytes to add to the buffer allocation.
+  @return {null}
+  */
 DataStream.prototype._realloc = function(extra) {
   if (!this._dynamicSize) {
     return;
@@ -135,6 +148,14 @@ DataStream.prototype._realloc = function(extra) {
   this._byteLength = req;
 };
 
+/**
+  Internal function to trim the DataStream buffer when required.
+  Used for stripping out the extra bytes from the backing buffer when
+  the virtual byteLength is smaller than the buffer byteLength (happens after
+  growing the buffer with writes and not filling the extra space completely).
+
+  @return {null}
+  */
 DataStream.prototype._trimAlloc = function() {
   if (this._byteLength == this._buffer.byteLength) {
     return;
@@ -149,6 +170,9 @@ DataStream.prototype._trimAlloc = function() {
 /**
   Sets the DataStream read/write position to given position.
   Clamps between 0 and DataStream length.
+
+  @param {number} pos Position to seek to.
+  @return {null}
   */
 DataStream.prototype.seek = function(pos) {
   var npos = Math.max(0, Math.min(this.byteLength, pos));
@@ -156,8 +180,10 @@ DataStream.prototype.seek = function(pos) {
 };
 
 /**
-  Returns true if the DataStream pointer is at the end of buffer and there's
-  no more data to read.
+  Returns true if the DataStream seek pointer is at the end of buffer and
+  there's no more data to read.
+
+  @return {boolean} True if the seek pointer is at the end of the buffer.
   */
 DataStream.prototype.isEof = function() {
   return (this.position >= this._byteLength);
