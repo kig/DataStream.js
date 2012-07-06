@@ -488,9 +488,9 @@
 
   var s = "Hello, 世界";
   var dss = new DataStream();
-  dss.writeUTF16String(s);
+  dss.writeUCS2String(s);
   dss.seek(0);
-  assertEqual(s, dss.readUTF16String(s.length));
+  assertEqual(s, dss.readUCS2String(s.length));
 
   var s = "Exif\000\000";
   var dss = new DataStream();
