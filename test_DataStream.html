@@ -91,13 +91,7 @@
     testTypeArray(ds, t, elen);
   };
 
-  var testTypeArray = function(ds, t, elen) {
-    var i = 0;
-    var blen = ds.byteLength;
-    var arr = [];
-    for (i=0; i<ds.byteLength/elen; i++) {
-      arr.push(125);
-    }
+  var testDS = function(i, ds, blen, t, elen, arr) {
     ds.dynamicSize = true;
     ds.endianness = DataStream.LITTLE_ENDIAN;
     ds.seek(0);
@@ -193,6 +187,21 @@
     assertFail(function() {
       ds2["read"+t+"Array"](1);
     });
+  };
+
+  var testTypeArray = function(ds, t, elen) {
+    var i = 0;
+    var blen = ds.byteLength;
+    var arr = [];
+    for (i=0; i<ds.byteLength/elen; i++) {
+      arr.push(125);
+    }
+    testDS(i, ds, blen, t, elen, arr);
+    var arr = new this[t+"Array"](ds.byteLength/elen);
+    for (i=0; i<arr.length; i++) {
+      arr[i] = (125 + i) % 127;
+    }
+    testDS(i, ds, blen, t, elen, arr);
   };
 
   var test_constructor = function() {

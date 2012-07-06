@@ -189,196 +189,463 @@ DataStream.prototype.isEof = function() {
   return (this.position >= this._byteLength);
 };
 
+/**
+  Maps an Int32Array into the DataStream buffer, swizzling it to native
+  endianness in-place. The current offset from the start of the buffer needs to
+  be a multiple of element size, just like with typed array views.
 
+  Nice for quickly reading in data. Warning: potentially modifies the buffer
+  contents.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Int32Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapInt32Array = function(length, e) {
   this._realloc(length * 4);
-  var arr = new Int32Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Int32Array(this._buffer, this.byteOffset+this.position, length);
   DataStream.arrayToNative(arr, e == null ? this.endianness : e);
   this.position += length * 4;
   return arr;
 };
 
+/**
+  Maps an Int16Array into the DataStream buffer, swizzling it to native
+  endianness in-place. The current offset from the start of the buffer needs to
+  be a multiple of element size, just like with typed array views.
+
+  Nice for quickly reading in data. Warning: potentially modifies the buffer
+  contents.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Int16Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapInt16Array = function(length, e) {
   this._realloc(length * 2);
-  var arr = new Int16Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Int16Array(this._buffer, this.byteOffset+this.position, length);
   DataStream.arrayToNative(arr, e == null ? this.endianness : e);
   this.position += length * 2;
   return arr;
 };
 
+/**
+  Maps an Int8Array into the DataStream buffer.
+
+  Nice for quickly reading in data.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Int8Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapInt8Array = function(length) {
   this._realloc(length * 1);
-  var arr = new Int8Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Int8Array(this._buffer, this.byteOffset+this.position, length);
   this.position += length * 1;
   return arr;
 };
 
+/**
+  Maps a Uint32Array into the DataStream buffer, swizzling it to native
+  endianness in-place. The current offset from the start of the buffer needs to
+  be a multiple of element size, just like with typed array views.
+
+  Nice for quickly reading in data. Warning: potentially modifies the buffer
+  contents.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Uint32Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapUint32Array = function(length, e) {
   this._realloc(length * 4);
-  var arr = new Uint32Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Uint32Array(this._buffer, this.byteOffset+this.position, length);
   DataStream.arrayToNative(arr, e == null ? this.endianness : e);
   this.position += length * 4;
   return arr;
 };
 
+/**
+  Maps a Uint16Array into the DataStream buffer, swizzling it to native
+  endianness in-place. The current offset from the start of the buffer needs to
+  be a multiple of element size, just like with typed array views.
+
+  Nice for quickly reading in data. Warning: potentially modifies the buffer
+  contents.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Uint16Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapUint16Array = function(length, e) {
   this._realloc(length * 2);
-  var arr = new Uint16Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Uint16Array(this._buffer, this.byteOffset+this.position, length);
   DataStream.arrayToNative(arr, e == null ? this.endianness : e);
   this.position += length * 2;
   return arr;
 };
 
+/**
+  Maps a Uint8Array into the DataStream buffer.
+
+  Nice for quickly reading in data.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Uint8Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapUint8Array = function(length) {
   this._realloc(length * 1);
-  var arr = new Uint8Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Uint8Array(this._buffer, this.byteOffset+this.position, length);
   this.position += length * 1;
   return arr;
 };
 
+/**
+  Maps a Float64Array into the DataStream buffer, swizzling it to native
+  endianness in-place. The current offset from the start of the buffer needs to
+  be a multiple of element size, just like with typed array views.
+
+  Nice for quickly reading in data. Warning: potentially modifies the buffer
+  contents.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Float64Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapFloat64Array = function(length, e) {
   this._realloc(length * 8);
-  var arr = new Float64Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Float64Array(this._buffer, this.byteOffset+this.position, length);
   DataStream.arrayToNative(arr, e == null ? this.endianness : e);
   this.position += length * 8;
   return arr;
 };
 
+/**
+  Maps a Float32Array into the DataStream buffer, swizzling it to native
+  endianness in-place. The current offset from the start of the buffer needs to
+  be a multiple of element size, just like with typed array views.
+
+  Nice for quickly reading in data. Warning: potentially modifies the buffer
+  contents.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} Float32Array to the DataStream backing buffer.
+  */
 DataStream.prototype.mapFloat32Array = function(length, e) {
   this._realloc(length * 4);
-  var arr = new Float32Array(this.buffer, this.byteOffset+this.position, length);
+  var arr = new Float32Array(this._buffer, this.byteOffset+this.position, length);
   DataStream.arrayToNative(arr, e == null ? this.endianness : e);
   this.position += length * 4;
   return arr;
 };
 
+/**
+  Reads an Int32Array of desired length and endianness from the DataStream.
 
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Int32Array.
+ */
 DataStream.prototype.readInt32Array = function(length, e) {
   length = length == null ? (this.byteLength-this.position / 4) : length;
   var arr = new Int32Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readInt32(e);
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  DataStream.arrayToNative(arr, e == null ? this.endianness : e);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Reads an Int16Array of desired length and endianness from the DataStream.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Int16Array.
+ */
 DataStream.prototype.readInt16Array = function(length, e) {
   length = length == null ? (this.byteLength-this.position / 2) : length;
   var arr = new Int16Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readInt16(e);
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  DataStream.arrayToNative(arr, e == null ? this.endianness : e);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Reads an Int8Array of desired length from the DataStream.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Int8Array.
+ */
 DataStream.prototype.readInt8Array = function(length) {
   length = length == null ? (this.byteLength-this.position) : length;
   var arr = new Int8Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readInt8();
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Reads a Uint32Array of desired length and endianness from the DataStream.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Uint32Array.
+ */
 DataStream.prototype.readUint32Array = function(length, e) {
   length = length == null ? (this.byteLength-this.position / 4) : length;
   var arr = new Uint32Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readUint32(e);
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  DataStream.arrayToNative(arr, e == null ? this.endianness : e);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Reads a Uint16Array of desired length and endianness from the DataStream.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Uint16Array.
+ */
 DataStream.prototype.readUint16Array = function(length, e) {
   length = length == null ? (this.byteLength-this.position / 2) : length;
   var arr = new Uint16Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readUint16(e);
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  DataStream.arrayToNative(arr, e == null ? this.endianness : e);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Reads a Uint8Array of desired length from the DataStream.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Uint8Array.
+ */
 DataStream.prototype.readUint8Array = function(length) {
   length = length == null ? (this.byteLength-this.position) : length;
   var arr = new Uint8Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readUint8();
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Reads a Float64Array of desired length and endianness from the DataStream.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Float64Array.
+ */
 DataStream.prototype.readFloat64Array = function(length, e) {
   length = length == null ? (this.byteLength-this.position / 8) : length;
   var arr = new Float64Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readFloat64(e);
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  DataStream.arrayToNative(arr, e == null ? this.endianness : e);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Reads a Float32Array of desired length and endianness from the DataStream.
+
+  @param {number} length Number of elements to map.
+  @param {boolean} e Endianness of the data to read.
+  @return {Object} The read Float32Array.
+ */
 DataStream.prototype.readFloat32Array = function(length, e) {
   length = length == null ? (this.byteLength-this.position / 4) : length;
   var arr = new Float32Array(length);
-  for (var i=0; i<length; i++) {
-    arr[i] = this.readFloat32(e);
-  }
+  DataStream.memcpy(arr.buffer, 0,
+                    this.buffer, this.byteOffset+this.position,
+                    length*arr.BYTES_PER_ELEMENT);
+  DataStream.arrayToNative(arr, e == null ? this.endianness : e);
+  this.position += arr.byteLength;
   return arr;
 };
 
+/**
+  Writes an Int32Array of specified endianness to the DataStream.
 
+  @param {Object} arr The array to write.
+  @param {boolean} e Endianness of the data to write.
+ */
 DataStream.prototype.writeInt32Array = function(arr, e) {
   this._realloc(arr.length * 4);
-  for (var i=0; i<arr.length; i++) {
-    this.writeInt32(arr[i], e);
+  if (arr instanceof Int32Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapInt32Array(arr.length, e);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeInt32(arr[i], e);
+    }
   }
 };
 
+/**
+  Writes an Int16Array of specified endianness to the DataStream.
+
+  @param {Object} arr The array to write.
+  @param {boolean} e Endianness of the data to write.
+ */
 DataStream.prototype.writeInt16Array = function(arr, e) {
   this._realloc(arr.length * 2);
-  for (var i=0; i<arr.length; i++) {
-    this.writeInt16(arr[i], e);
+  if (arr instanceof Int16Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapInt16Array(arr.length, e);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeInt16(arr[i], e);
+    }
   }
 };
 
+/**
+  Writes an Int8Array to the DataStream.
+
+  @param {Object} arr The array to write.
+ */
 DataStream.prototype.writeInt8Array = function(arr) {
   this._realloc(arr.length * 1);
-  for (var i=0; i<arr.length; i++) {
-    this.writeInt8(arr[i]);
+  if (arr instanceof Int8Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapInt8Array(arr.length);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeInt8(arr[i]);
+    }
   }
 };
 
+/**
+  Writes a Uint32Array of specified endianness to the DataStream.
+
+  @param {Object} arr The array to write.
+  @param {boolean} e Endianness of the data to write.
+ */
 DataStream.prototype.writeUint32Array = function(arr, e) {
   this._realloc(arr.length * 4);
-  for (var i=0; i<arr.length; i++) {
-    this.writeUint32(arr[i], e);
+  if (arr instanceof Uint32Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapUint32Array(arr.length, e);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeUint32(arr[i], e);
+    }
   }
 };
 
+/**
+  Writes a Uint16Array of specified endianness to the DataStream.
+
+  @param {Object} arr The array to write.
+  @param {boolean} e Endianness of the data to write.
+ */
 DataStream.prototype.writeUint16Array = function(arr, e) {
   this._realloc(arr.length * 2);
-  for (var i=0; i<arr.length; i++) {
-    this.writeUint16(arr[i], e);
+  if (arr instanceof Uint16Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapUint16Array(arr.length, e);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeUint16(arr[i], e);
+    }
   }
 };
 
+/**
+  Writes a Uint8Array to the DataStream.
+
+  @param {Object} arr The array to write.
+ */
 DataStream.prototype.writeUint8Array = function(arr) {
   this._realloc(arr.length * 1);
-  for (var i=0; i<arr.length; i++) {
-    this.writeUint8(arr[i]);
+  if (arr instanceof Uint8Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapUint8Array(arr.length);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeUint8(arr[i]);
+    }
   }
 };
 
+/**
+  Writes a Float64Array of specified endianness to the DataStream.
+
+  @param {Object} arr The array to write.
+  @param {boolean} e Endianness of the data to write.
+ */
 DataStream.prototype.writeFloat64Array = function(arr, e) {
   this._realloc(arr.length * 8);
-  for (var i=0; i<arr.length; i++) {
-    this.writeFloat64(arr[i], e);
+  if (arr instanceof Float64Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapFloat64Array(arr.length, e);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeFloat64(arr[i], e);
+    }
   }
 };
 
+/**
+  Writes a Float32Array of specified endianness to the DataStream.
+
+  @param {Object} arr The array to write.
+  @param {boolean} e Endianness of the data to write.
+ */
 DataStream.prototype.writeFloat32Array = function(arr, e) {
   this._realloc(arr.length * 4);
-  for (var i=0; i<arr.length; i++) {
-    this.writeFloat32(arr[i], e);
+  if (arr instanceof Float32Array &&
+      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+    DataStream.memcpy(this._buffer, this.byteOffset+this.position,
+                      arr.buffer, 0,
+                      arr.byteLength);
+    this.mapFloat32Array(arr.length, e);
+  } else {
+    for (var i=0; i<arr.length; i++) {
+      this.writeFloat32(arr[i], e);
+    }
   }
 };
 
@@ -483,6 +750,12 @@ DataStream.prototype.writeFloat64 = function(v, e) {
 
 
 DataStream.endianness = new Int8Array(new Int16Array([1]).buffer)[0] > 0;
+
+DataStream.memcpy = function(dst, dstOffset, src, srcOffset, byteLength) {
+  var dstU8 = new Uint8Array(dst, dstOffset, byteLength);
+  var srcU8 = new Uint8Array(src, srcOffset, byteLength);
+  dstU8.set(srcU8);
+};
 
 DataStream.arrayToNative = function(array, arrayIsLittleEndian) {
   if (arrayIsLittleEndian == this.endianness) {
