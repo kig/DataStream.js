@@ -961,9 +961,14 @@ DataStream.prototype.failurePosition = 0;
   'u16stringbe:N' -- UCS-2 string of length N in big-endian.
 
   // Complex types
-  function(dataStream, struct) {} -- callback function to read and return data
-  ['', type, length] -- Array of given type and length.
   [name, type, name_2, type_2, ..., name_N, type_N] -- Struct
+  function(dataStream, struct) {} -- Callback function to read and return data.
+  ['', type, length] -- Array of given type and length. The length can be either
+                        a number, a string that references a previously-read
+                        field, or a callback function(struct, dataStream, type){}
+
+  @param {Object} structDefinition Struct definition object.
+  @return {Object} The read struct. Null if failed to read struct.
  */
 DataStream.prototype.readStruct = function(structDefinition) {
   var struct = {}, t, v, n;
@@ -983,10 +988,27 @@ DataStream.prototype.readStruct = function(structDefinition) {
   return struct;
 };
 
+/**
+  Read UCS-2 string of desired length and endianness from the DataStream.
+
+  @param {number} length The length of the string to read.
+  @param {boolean} endianness The endianness of the string data in the DataStream.
+  @return {string} The read string.
+ */
 DataStream.prototype.readUCS2String = function(length, endianness) {
   return String.fromCharCode.apply(null, this.readUint16Array(length, endianness));
 };
 
+/**
+  Write a UCS-2 string of desired endianness to the DataStream. The
+  lengthOverride argument lets you define the number of characters to write.
+  If the string is shorter than lengthOverride, the extra space is padded with
+  zeroes.
+
+  @param {str} str The string to write.
+  @param {boolean} endianness The endianness to use for the written string data.
+  @param {number} lengthOverride The number of characters to write.
+ */
 DataStream.prototype.writeUCS2String = function(str, endianness, lengthOverride) {
   if (lengthOverride == null) {
     lengthOverride = str.length;
@@ -999,6 +1021,14 @@ DataStream.prototype.writeUCS2String = function(str, endianness, lengthOverride)
   }
 };
 
+/**
+  Read a string of desired length and encoding from the DataStream.
+
+  @param {number} length The length of the string to read.
+  @param {?string} encoding The encoding of the string data in the DataStream.
+                            Defaults to ASCII.
+  @return {string} The read string.
+ */
 DataStream.prototype.readString = function(length, encoding) {
   if (encoding == null || encoding == "ASCII") {
     return String.fromCharCode.apply(null, this.mapUint8Array(length == null ? this.byteLength-this.position : length));
@@ -1030,6 +1060,13 @@ DataStream.prototype.writeString = function(s, encoding, length) {
 };
 
 
+/**
+  Read UCS-2 string of desired length and endianness from the DataStream.
+
+  @param {number} length The length of the string to read.
+  @param {boolean} endianness The endianness of the string data in the DataStream.
+  @return {string} The read string.
+ */
 DataStream.prototype.readCString = function(length) {
   var blen = this.byteLength-this.position;
   var u8 = new Uint8Array(this._buffer, this._byteOffset + this.position);
