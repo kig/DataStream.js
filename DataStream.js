@@ -963,6 +963,8 @@ DataStream.prototype.failurePosition = 0;
   // Complex types
   [name, type, name_2, type_2, ..., name_N, type_N] -- Struct
   function(dataStream, struct) {} -- Callback function to read and return data.
+  {get: function(dataStream, struct) {}, set: function(dataStream, struct) {}}
+  -- Getter/setter functions to read and return data.
   ['', type, length] -- Array of given type and length. The length can be either
                         a number, a string that references a previously-read
                         field, or a callback function(struct, dataStream, type){}
@@ -1005,9 +1007,9 @@ DataStream.prototype.readUCS2String = function(length, endianness) {
   If the string is shorter than lengthOverride, the extra space is padded with
   zeroes.
 
-  @param {str} str The string to write.
-  @param {boolean} endianness The endianness to use for the written string data.
-  @param {number} lengthOverride The number of characters to write.
+  @param {string} str The string to write.
+  @param {?boolean} endianness The endianness to use for the written string data.
+  @param {?number} lengthOverride The number of characters to write.
  */
 DataStream.prototype.writeUCS2String = function(str, endianness, lengthOverride) {
   if (lengthOverride == null) {
@@ -1024,7 +1026,7 @@ DataStream.prototype.writeUCS2String = function(str, endianness, lengthOverride)
 /**
   Read a string of desired length and encoding from the DataStream.
 
-  @param {number} length The length of the string to read.
+  @param {number} length The length of the string to read in bytes.
   @param {?string} encoding The encoding of the string data in the DataStream.
                             Defaults to ASCII.
   @return {string} The read string.
@@ -1037,6 +1039,14 @@ DataStream.prototype.readString = function(length, encoding) {
   }
 };
 
+/**
+  Writes a string of desired length and encoding to the DataStream.
+
+  @param {string} s The string to write.
+  @param {?string} encoding The encoding for the written string data.
+                            Defaults to ASCII.
+  @param {?number} length The number of characters to write.
+ */
 DataStream.prototype.writeString = function(s, encoding, length) {
   if (encoding == null || encoding == "ASCII") {
     if (length != null) {
@@ -1061,10 +1071,10 @@ DataStream.prototype.writeString = function(s, encoding, length) {
 
 
 /**
-  Read UCS-2 string of desired length and endianness from the DataStream.
+  Read null-terminated string of desired length from the DataStream. Truncates
+  the returned string so that the null byte is not a part of it.
 
-  @param {number} length The length of the string to read.
-  @param {boolean} endianness The endianness of the string data in the DataStream.
+  @param {?number} length The length of the string to read.
   @return {string} The read string.
  */
 DataStream.prototype.readCString = function(length) {
@@ -1084,6 +1094,15 @@ DataStream.prototype.readCString = function(length) {
   return s;
 };
 
+/**
+  Writes a null-terminated string to DataStream and zero-pads it to length
+  bytes. If length is not given, writes the string followed by a zero.
+  If string is longer than length, the written part of the string does not have
+  a trailing zero.
+
+  @param {string} s The string to write.
+  @param {?number} length The number of characters to write.
+ */
 DataStream.prototype.writeCString = function(s, length) {
   if (length != null) {
     var i = 0;
@@ -1102,6 +1121,16 @@ DataStream.prototype.writeCString = function(s, length) {
   }
 };
 
+/**
+  Reads an object of type t from the DataStream, passing struct as the thus-far
+  read struct to possible callbacks that refer to it. Used by readStruct for
+  reading in the values, so the type is one of the readStruct types.
+
+  @param {Object} t Type of the object to read.
+  @param {?Object} struct Struct to refer to when resolving length references
+                          and for calling callbacks.
+  @return {?Object} Returns the object on successful read, null on unsuccessful.
+ */
 DataStream.prototype.readType = function(t, struct) {
   if (typeof t == "function") {
     return t(this, struct);
@@ -1279,6 +1308,14 @@ DataStream.prototype.readType = function(t, struct) {
   return v;
 };
 
+/**
+  Writes a struct to the DataStream. Takes a structDefinition that gives the
+  types and a struct object that gives the values. Refer to readStruct for the
+  structure of structDefinition.
+
+  @param {Object} structDefinition Type definition of the struct.
+  @param {Object} struct The struct data object.
+  */
 DataStream.prototype.writeStruct = function(structDefinition, struct) {
   for (var i = 0; i < structDefinition.length; i+=2) {
     var t = structDefinition[i+1];
@@ -1286,6 +1323,13 @@ DataStream.prototype.writeStruct = function(structDefinition, struct) {
   }
 };
 
+/**
+  Writes object v of type t to the DataStream.
+
+  @param {Object} t Type of data to write.
+  @param {Object} v Value of data to write.
+  @param {Object} struct Struct to pass to write callback functions.
+  */
 DataStream.prototype.writeType = function(t, v, struct) {
   if (typeof t == "function") {
     return t(this, v);
