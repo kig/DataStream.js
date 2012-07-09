@@ -929,9 +929,9 @@ DataStream.prototype.failurePosition = 0;
     'headerTag', 'uint32', // Uint32 in DataStream endianness.
     'headerTag2', 'uint32be', // Big-endian Uint32.
     'headerTag3', 'uint32le', // Little-endian Uint32.
-    'array', ['', 'uint32', 16], // Uint32Array of length 16.
+    'array', ['[]', 'uint32', 16], // Uint32Array of length 16.
     'array2Length', 'uint32',
-    'array2', ['', 'uint32', 'array2Length'] // Uint32Array of length array2Length
+    'array2', ['[]', 'uint32', 'array2Length'] // Uint32Array of length array2Length
   ]);
 
   The possible values for the type are as follows:
@@ -965,9 +965,10 @@ DataStream.prototype.failurePosition = 0;
   function(dataStream, struct) {} -- Callback function to read and return data.
   {get: function(dataStream, struct) {}, set: function(dataStream, struct) {}}
   -- Getter/setter functions to read and return data.
-  ['', type, length] -- Array of given type and length. The length can be either
+  ['[]', type, length] -- Array of given type and length. The length can be either
                         a number, a string that references a previously-read
-                        field, or a callback function(struct, dataStream, type){}
+                        field, or a callback function(struct, dataStream, type){}.
+                        If length is '*', reads in as many elements as it can.
 
   @param {Object} structDefinition Struct definition object.
   @return {Object} The read struct. Null if failed to read struct.
