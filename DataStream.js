@@ -946,9 +946,9 @@ DataStream.prototype.failurePosition = 0;
   'uint8' -- 8-bit unsigned int
   'uint16' -- 16-bit unsigned int
   'uint32' -- 32-bit unsigned int
-  'uint8' -- 8-bit unsigned int
-  'uint16' -- 16-bit int
-  'uint32' -- 32-bit int
+  'int8' -- 8-bit int
+  'int16' -- 16-bit int
+  'int32' -- 32-bit int
   'float32' -- 32-bit float
   'float64' -- 64-bit float
 
@@ -963,8 +963,10 @@ DataStream.prototype.failurePosition = 0;
   // Complex types
   [name, type, name_2, type_2, ..., name_N, type_N] -- Struct
   function(dataStream, struct) {} -- Callback function to read and return data.
-  {get: function(dataStream, struct) {}, set: function(dataStream, struct) {}}
-  -- Getter/setter functions to read and return data.
+  {get: function(dataStream, struct) {},
+   set: function(dataStream, struct) {}}
+  -- Getter/setter functions to read and return data, handy for using the same
+     struct definition for reading and writing structs.
   ['[]', type, length] -- Array of given type and length. The length can be either
                         a number, a string that references a previously-read
                         field, or a callback function(struct, dataStream, type){}.
