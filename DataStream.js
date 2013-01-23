@@ -23,6 +23,29 @@ DataStream = function(arrayBuffer, byteOffset, endianness) {
 };
 DataStream.prototype = {};
 
+
+/**
+  Saves the DataStream contents to the given filename.
+  Uses Chrome's anchor download property to initiate download.
+ 
+  @param {string} filename Filename to save as.
+  @return {null}
+  */
+DataStream.prototype.save = function(filename) {
+  var blob = new Blob(this.buffer);
+  var URL = (window.webkitURL || window.URL);
+  if (URL && URL.createObjectURL) {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', filename);
+      a.click();
+      URL.revokeObjectURL(url);
+  } else {
+      throw("DataStream.save: Can't create object URL.");
+  }
+};
+
 /**
   Big-endian const to use as default endianness.
   @type {boolean}
@@ -1065,7 +1088,6 @@ DataStream.prototype.writeString = function(s, encoding, length) {
       for (var i=0; i<s.length; i++) {
         this.writeUint8(s.charCodeAt(i));
       }
-      this.writeUint8(0);
     }
   } else {
     this.writeUint8Array((new TextEncoder(encoding)).encode(s.substring(0, length)));
