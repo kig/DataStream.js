@@ -16,7 +16,7 @@ DataStream = function(arrayBuffer, byteOffset, endianness) {
       this._byteOffset += byteOffset;
     }
   } else {
-    this.buffer = new ArrayBuffer(arrayBuffer || 0);
+    this.buffer = new ArrayBuffer(arrayBuffer || 1);
   }
   this.position = 0;
   this.endianness = endianness == null ? DataStream.LITTLE_ENDIAN : endianness;
