@@ -209,7 +209,7 @@ DataStream.prototype.seek = function(pos) {
   @return {boolean} True if the seek pointer is at the end of the buffer.
   */
 DataStream.prototype.isEof = function() {
-  return (this.position >= this._byteLength);
+  return (this.position >= this.byteLength);
 };
 
 /**
