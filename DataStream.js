@@ -27,7 +27,7 @@ DataStream.prototype = {};
 /**
   Saves the DataStream contents to the given filename.
   Uses Chrome's anchor download property to initiate download.
- 
+
   @param {string} filename Filename to save as.
   @return {null}
   */
@@ -977,7 +977,9 @@ DataStream.prototype.failurePosition = 0;
 
   // String types
   'cstring' -- ASCII string terminated by a zero byte.
-  'string:N' -- ASCII string of length N.
+  'string:N' -- ASCII string of length N, where N is a literal integer.
+  'string:variableName' -- ASCII string of length $variableName,
+    where 'variableName' is a previously parsed number in the current struct.
   'string,CHARSET:N' -- String of byteLength N encoded with given CHARSET.
   'u16string:N' -- UCS-2 string of length N in DataStream endianness.
   'u16stringle:N' -- UCS-2 string of length N in little-endian.
@@ -1168,10 +1170,21 @@ DataStream.prototype.readType = function(t, struct) {
   var lengthOverride = null;
   var charset = "ASCII";
   var pos = this.position;
+  var len;
   if (typeof t == 'string' && /:/.test(t)) {
     var tp = t.split(":");
     t = tp[0];
-    lengthOverride = parseInt(tp[1]);
+    len = tp[1];
+
+    // allow length to be previously parsed variable
+    // e.g. 'string:fieldLength', if `fieldLength` has
+    // been parsed previously.
+    if (struct[len] != null) {
+      lengthOverride = parseInt(struct[len]);
+    } else {
+      // assume literal integer e.g., 'string:4'
+      lengthOverride = parseInt(tp[1]);
+    }
   }
   if (typeof t == 'string' && /,/.test(t)) {
     var tp = t.split(",");
