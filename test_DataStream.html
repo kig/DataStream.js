@@ -22,7 +22,7 @@
     }
     for (var i=0; i<a.length; i++) {
       if (a[i] != b[i]) {
-        throw('assertEqualArray failed at '+i+': '+a[i]+' != '+b[i]);
+	throw('assertEqualArray failed at '+i+': '+a[i]+' != '+b[i]);
       }
     }
   };
@@ -64,7 +64,7 @@
     ds.seek(0);
     if (elen > 1) {
       for (i=0; i<ds.byteLength/elen; i++) {
-        assertNotEqual(ds["read"+t](), 125);
+	assertNotEqual(ds["read"+t](), 125);
       }
     }
     ds.seek(0);
@@ -131,7 +131,7 @@
     if (elen > 1) {
     var warr = ds["read"+t+"Array"](arr.length);
       for (i=0; i<ds.byteLength/elen; i++) {
-        assertNotEqual(warr[i], 127);
+	assertNotEqual(warr[i], 127);
       }
     }
     ds.seek(0);
@@ -149,7 +149,7 @@
     var rarr = ds["read"+t+"Array"](arr.length);
     if (elen > 1) {
       for (i=0; i<ds.byteLength/elen; i++) {
-        assertNotEqual(rarr[i], arr[i]);
+	assertNotEqual(rarr[i], arr[i]);
       }
     }
     ds.seek(0);
@@ -284,12 +284,12 @@
     ];
 
     var u = [137,  80,  78,  71,   0, 136, 136, 254, 137,  80,
-              78,  71,   0, 136, 136, 255,  72, 101, 108, 108,
-             111,  44,  32,  87, 111, 114, 108, 100,  33,   0,
-               0,   2,   0,   1,   2,   3,   1,   2,   3,   4,
-              72, 101, 108, 108, 111,  44,  32,  87, 111, 114,
-             108, 100,  33,   0,   0,   0,   0,   0,   0,   0,
-             255];
+	      78,  71,   0, 136, 136, 255,  72, 101, 108, 108,
+	     111,  44,  32,  87, 111, 114, 108, 100,  33,   0,
+	       0,   2,   0,   1,   2,   3,   1,   2,   3,   4,
+	      72, 101, 108, 108, 111,  44,  32,  87, 111, 114,
+	     108, 100,  33,   0,   0,   0,   0,   0,   0,   0,
+	     255];
 
     var ds = new DataStream();
     ds.writeUint8Array(u);
@@ -365,20 +365,20 @@
     var def4 = [
       'length', 'uint16be',
       'data', {
-        get: function(ds, s) {
-          var o = {odd:[], even:[]};
-          for (var i=0; i<s.length-2; i+=2) {
-            o.odd.push(ds.readUint8());
-            o.even.push(ds.readUint8());
-          }
-          return o;
-        },
-        set: function(ds, v) {
-          for (var i=0; i<v.odd.length; i++) {
-            ds.writeUint8(v.odd[i]);
-            ds.writeUint8(v.even[i]);
-          }
-        }
+	get: function(ds, s) {
+	  var o = {odd:[], even:[]};
+	  for (var i=0; i<s.length-2; i+=2) {
+	    o.odd.push(ds.readUint8());
+	    o.even.push(ds.readUint8());
+	  }
+	  return o;
+	},
+	set: function(ds, v) {
+	  for (var i=0; i<v.odd.length; i++) {
+	    ds.writeUint8(v.odd[i]);
+	    ds.writeUint8(v.even[i]);
+	  }
+	}
       },
       'endNote', 'uint8'
     ];
@@ -395,6 +395,34 @@
     var o4b = ds4.readStruct(def4);
     assertEqual(JSON.stringify(o4), JSON.stringify(o4b));
     assertEqualArray(u4.concat(u4), new Uint8Array(ds4.buffer));
+
+	/* Test variable-length string definition */
+    var def5 = [
+      'len', 'uint8',
+      'greet', 'cstring:len',
+      'pad', 'string:2',
+      'len2', 'uint8',
+      'greet2', 'string:len2',
+      'tail', [[], 'uint8', '*']
+    ];
+
+    var u5 = [5,
+	      72, 101, 108, 108, 111, // "Hello"
+          44,  32, // ", "
+           6,
+          87, 111, 114, 108, 100,  33, // "World!"
+           0,   0,   0,   0,   0,   0,   0, 255];
+
+    var ds5 = new DataStream();
+    ds5.writeUint8Array(u5);
+    ds5.seek(0);
+    var o5 = ds5.readStruct(def5);
+	assertEqual(o5.len, o5.greet.length);
+    assertEqual('Hello', o5.greet);
+    assertEqual(', ', o5.pad);
+	assertEqual(o5.len2, o5.greet2.length);
+    assertEqual('World!', o5.greet2);
+    assertEqualArray([0,0,0,0,0,0,0,255], o5.tail);
   };
 
   test_constructor();
