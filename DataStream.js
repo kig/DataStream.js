@@ -23,6 +23,17 @@ DataStream = function(arrayBuffer, byteOffset, endianness) {
 };
 DataStream.prototype = {};
 
+/* Fix for Opera 12 not defining BYTES_PER_ELEMENT in typed array prototypes. */
+if (Uint8Array.prototype.BYTES_PER_ELEMENT === undefined) {
+    Uint8Array.prototype.BYTES_PER_ELEMENT = Uint8Array.BYTES_PER_ELEMENT; 
+    Int8Array.prototype.BYTES_PER_ELEMENT = Int8Array.BYTES_PER_ELEMENT; 
+    Uint8ClampedArray.prototype.BYTES_PER_ELEMENT = Uint8ClampedArray.BYTES_PER_ELEMENT; 
+    Uint16Array.prototype.BYTES_PER_ELEMENT = Uint16Array.BYTES_PER_ELEMENT; 
+    Int16Array.prototype.BYTES_PER_ELEMENT = Int16Array.BYTES_PER_ELEMENT; 
+    Uint32Array.prototype.BYTES_PER_ELEMENT = Uint32Array.BYTES_PER_ELEMENT; 
+    Int32Array.prototype.BYTES_PER_ELEMENT = Int32Array.BYTES_PER_ELEMENT; 
+    Float64Array.prototype.BYTES_PER_ELEMENT = Float64Array.BYTES_PER_ELEMENT; 
+}
 
 /**
   Saves the DataStream contents to the given filename.
