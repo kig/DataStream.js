@@ -1,7 +1,9 @@
 DataStream.js
 =============
 
-DataStream.js is a library for reading data from ArrayBuffers
+DataStream.js is a library for reading data from ArrayBuffers, see [this HTML5Rocks article](http://www.html5rocks.com/en/tutorials/webgl/typed_arrays/) for documentation.
+
+There is a JPEG marker decoder example in jpeg.html, it prints out JPEG marker contents and uses the jpg.js library to decode the JPEG and draw it on a canvas element.
 
 LICENSE
 =======
