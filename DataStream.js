@@ -937,6 +937,21 @@ DataStream.flipArrayEndianness = function(array) {
 };
 
 /**
+  Creates an array from an array of character codes.
+  Uses String.fromCharCode on the character codes and concats the results into a string.
+
+  @param {array} array Array of character codes.
+  @return {string} String created from the character codes.
+**/
+DataStream.createStringFromArray = function(array) {
+  var str = "";
+  for (var i=0; i<array.length; i++) {
+    str += String.fromCharCode(array[i]);
+  }
+  return str;
+};
+
+/**
   Seek position where DataStream#readStruct ran into a problem.
   Useful for debugging struct parsing.
 
@@ -1026,7 +1041,7 @@ DataStream.prototype.readStruct = function(structDefinition) {
   @return {string} The read string.
  */
 DataStream.prototype.readUCS2String = function(length, endianness) {
-  return String.fromCharCode.apply(null, this.readUint16Array(length, endianness));
+  return DataStream.createStringFromArray(this.readUint16Array(length, endianness));
 };
 
 /**
@@ -1061,7 +1076,7 @@ DataStream.prototype.writeUCS2String = function(str, endianness, lengthOverride)
  */
 DataStream.prototype.readString = function(length, encoding) {
   if (encoding == null || encoding == "ASCII") {
-    return String.fromCharCode.apply(null, this.mapUint8Array(length == null ? this.byteLength-this.position : length));
+    return DataStream.createStringFromArray(this.mapUint8Array(length == null ? this.byteLength-this.position : length));
   } else {
     return (new TextDecoder(encoding)).decode(this.mapUint8Array(length));
   }
@@ -1112,7 +1127,7 @@ DataStream.prototype.readCString = function(length) {
     len = Math.min(length, blen);
   }
   for (var i = 0; i < len && u8[i] != 0; i++); // find first zero byte
-  var s = String.fromCharCode.apply(null, this.mapUint8Array(i));
+  var s = DataStream.createStringFromArray(this.mapUint8Array(i));
   if (length != null) {
     this.position += len-i;
   } else if (i != blen) {
