@@ -1518,3 +1518,9 @@ DataStream.prototype.writeType = function(t, v, struct) {
   }
 };
 
+// Export DataStream for amd environments
+if (typeof define === 'function' && define.amd) {
+    define('DataStream', [], function() {
+      return DataStream;
+    });
+  }
