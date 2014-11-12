@@ -1524,3 +1524,9 @@ if (typeof define === 'function' && define.amd) {
       return DataStream;
     });
   }
+  
+// Export DataStream for CommonJS
+if (typeof module === 'object' && module && module.exports) {
+  module.exports = DataStream;
+}
+
