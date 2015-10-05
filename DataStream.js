@@ -949,17 +949,19 @@ DataStream.flipArrayEndianness = function(array) {
 
 /**
   Creates an array from an array of character codes.
-  Uses String.fromCharCode on the character codes and concats the results into a string.
+  Uses String.fromCharCode in chunks for memory efficiency and then concatenates
+  the resulting string chunks.
 
   @param {array} array Array of character codes.
   @return {string} String created from the character codes.
 **/
 DataStream.createStringFromArray = function(array) {
-  var str = "";
-  for (var i=0; i<array.length; i++) {
-    str += String.fromCharCode(array[i]);
+  var chunk_size = 0x8000;
+  var chunks = [];
+  for (var i=0; i < array.length; i += chunk_size) {
+    chunks.push(String.fromCharCode.apply(null, array.subarray(i, i + chunk_size)));
   }
-  return str;
+  return chunks.join("");
 };
 
 /**
