@@ -526,7 +526,7 @@ DataStream.prototype.readFloat32Array = function(length, e) {
 DataStream.prototype.writeInt32Array = function(arr, e) {
   this._realloc(arr.length * 4);
   if (arr instanceof Int32Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);
@@ -547,7 +547,7 @@ DataStream.prototype.writeInt32Array = function(arr, e) {
 DataStream.prototype.writeInt16Array = function(arr, e) {
   this._realloc(arr.length * 2);
   if (arr instanceof Int16Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);
@@ -567,7 +567,7 @@ DataStream.prototype.writeInt16Array = function(arr, e) {
 DataStream.prototype.writeInt8Array = function(arr) {
   this._realloc(arr.length * 1);
   if (arr instanceof Int8Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);
@@ -588,7 +588,7 @@ DataStream.prototype.writeInt8Array = function(arr) {
 DataStream.prototype.writeUint32Array = function(arr, e) {
   this._realloc(arr.length * 4);
   if (arr instanceof Uint32Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);
@@ -609,7 +609,7 @@ DataStream.prototype.writeUint32Array = function(arr, e) {
 DataStream.prototype.writeUint16Array = function(arr, e) {
   this._realloc(arr.length * 2);
   if (arr instanceof Uint16Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);
@@ -629,7 +629,7 @@ DataStream.prototype.writeUint16Array = function(arr, e) {
 DataStream.prototype.writeUint8Array = function(arr) {
   this._realloc(arr.length * 1);
   if (arr instanceof Uint8Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);
@@ -650,7 +650,7 @@ DataStream.prototype.writeUint8Array = function(arr) {
 DataStream.prototype.writeFloat64Array = function(arr, e) {
   this._realloc(arr.length * 8);
   if (arr instanceof Float64Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);
@@ -671,7 +671,7 @@ DataStream.prototype.writeFloat64Array = function(arr, e) {
 DataStream.prototype.writeFloat32Array = function(arr, e) {
   this._realloc(arr.length * 4);
   if (arr instanceof Float32Array &&
-      this.byteOffset+this.position % arr.BYTES_PER_ELEMENT == 0) {
+      (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
                       arr.buffer, 0,
                       arr.byteLength);

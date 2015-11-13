@@ -43,44 +43,45 @@
 
   var testType = function(ds, t, elen) {
     var i = 0;
+    var boff = ds.byteOffset;
     var blen = ds.byteLength;
     ds.dynamicSize = true;
     ds.endianness = DataStream.LITTLE_ENDIAN;
     ds.seek(0);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       ds["write"+t](125);
     }
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     ds.seek(0);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(ds["read"+t](), 125);
     }
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     ds.endianness = DataStream.BIG_ENDIAN;
     ds.seek(0);
     if (elen > 1) {
-      for (i=0; i<ds.byteLength/elen; i++) {
+      for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
 	assertNotEqual(ds["read"+t](), 125);
       }
     }
     ds.seek(0);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       ds["write"+t](125);
     }
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     ds.seek(0);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(ds["read"+t](), 125);
     }
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     assertFail(function() {
       ds["read"+t]();
     });
@@ -91,84 +92,114 @@
     testTypeArray(ds, t, elen);
   };
 
-  var testDS = function(i, ds, blen, t, elen, arr) {
+  var testDS = function(i, ds, boff, blen, t, elen, arr) {
     ds.dynamicSize = true;
     ds.endianness = DataStream.LITTLE_ENDIAN;
+
     ds.seek(0);
     ds["write"+t+"Array"](arr);
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     ds.seek(0);
     var rarr = ds["read"+t+"Array"](arr.length);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    ds.seek(0);
+    var rarr2 = [];
+    for (i=0; i<arr.length; i++) {
+      rarr2.push(ds["read"+t]());
+    }
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
+      assertEqual(rarr[i], arr[i]);
+      assertEqual(rarr[i], rarr2[i]);
+    }
+    assertEqual(ds.position , elen*i);
+    assertEqual(ds.byteLength , blen);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
+
+    ds.seek(0);
+    for (var i=0; i<arr.length; i++) {
+      ds["write"+t](arr[i]);
+    }
+    assertEqual(ds.position , elen*i);
+    assertEqual(ds.byteLength , blen);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
+    ds.seek(0);
+    var rarr = ds["read"+t+"Array"](arr.length);
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(rarr[i], arr[i]);
     }
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
+
+    // Map tests
+    if (ds.byteOffset & rarr.BYTES_PER_ELEMENT === 0) {
+
+
     ds.seek(0);
     var rarr = ds["map"+t+"Array"](arr.length);
     ds.seek(0);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(rarr[i], arr[i]);
       rarr[i] = 127;
     }
     ds.seek(0);
     var warr = ds["read"+t+"Array"](arr.length);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(warr[i], 127);
     }
     ds.endianness = DataStream.BIG_ENDIAN;
     ds.seek(0);
     var rarr = ds["map"+t+"Array"](arr.length);
     ds.seek(0);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertNotEqual(rarr[i], arr[i]);
       rarr[i] = 127;
     }
     ds.seek(0);
     if (elen > 1) {
     var warr = ds["read"+t+"Array"](arr.length);
-      for (i=0; i<ds.byteLength/elen; i++) {
-	assertNotEqual(warr[i], 127);
+      for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
+        assertNotEqual(warr[i], 127);
       }
     }
     ds.seek(0);
     ds["map"+t+"Array"](arr.length);
     ds.seek(0);
     var warr = ds["read"+t+"Array"](arr.length);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(warr[i], 127);
     }
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     ds.endianness = DataStream.BIG_ENDIAN;
     ds.seek(0);
     var rarr = ds["read"+t+"Array"](arr.length);
     if (elen > 1) {
-      for (i=0; i<ds.byteLength/elen; i++) {
-	assertNotEqual(rarr[i], arr[i]);
+      for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
+        assertNotEqual(rarr[i], arr[i]);
       }
     }
+    }
+
     ds.seek(0);
     ds["write"+t+"Array"](arr);
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     ds.seek(0);
     var rarr = ds["read"+t+"Array"](arr.length);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(rarr[i], arr[i]);
     }
     ds.seek(0);
-    for (i=0; i<ds.byteLength/elen; i++) {
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
       assertEqual(ds["read"+t](), arr[i]);
     }
     assertEqual(ds.position , elen*i);
     assertEqual(ds.byteLength , blen);
-    assertEqual(ds.buffer.byteLength , ds.byteLength);
+    assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     assertFail(function() {
       ds["read"+t+"Array"](1);
     });
@@ -191,17 +222,18 @@
 
   var testTypeArray = function(ds, t, elen) {
     var i = 0;
+    var boff = ds.byteOffset;
     var blen = ds.byteLength;
     var arr = [];
-    for (i=0; i<ds.byteLength/elen; i++) {
-      arr.push(125);
+    for (i=0; i<Math.floor(ds.byteLength/elen); i++) {
+      arr.push((125 + i) % 127);
     }
-    testDS(i, ds, blen, t, elen, arr);
+    testDS(i, ds, boff, blen, t, elen, arr);
     var arr = new this[t+"Array"](ds.byteLength/elen);
     for (i=0; i<arr.length; i++) {
       arr[i] = (125 + i) % 127;
     }
-    testDS(i, ds, blen, t, elen, arr);
+    testDS(i, ds, boff, blen, t, elen, arr);
   };
 
   var test_constructor = function() {
@@ -431,9 +463,9 @@
     throw("Err, DataStream.endianness should be DataStream.LITTLE_ENDIAN or DataStream.BIG_ENDIAN");
   }
 
-  var buf = new ArrayBuffer(1000);
-  var ds = new DataStream(buf);
-  assertEqual(ds.byteLength , buf.byteLength);
+  var buf = new ArrayBuffer(1064);
+  var ds = new DataStream(buf, 64);
+  assertEqual(ds.byteLength+64, buf.byteLength);
   ds.endianness = DataStream.LITTLE_ENDIAN;
   ds.writeUint16(1);
   ds.seek(0);
@@ -452,15 +484,15 @@
   for (var i = 0; i < 1000 / 8; i++) {
     ds.writeFloat64(0.125);
   }
-  assertEqual(ds.position , buf.byteLength);
-  assertEqual(ds.byteLength , buf.byteLength);
+  assertEqual(ds.position+64 , buf.byteLength);
+  assertEqual(ds.byteLength+64 , buf.byteLength);
   assertEqual(ds.buffer.byteLength , buf.byteLength);
 
   ds.seek(0);
   for (var i = 0; i < 1000 / 8; i++) {
     assertEqual(0.125 , ds.readFloat64());
   }
-  assertEqual(ds.position , buf.byteLength);
+  assertEqual(ds.position+64 , buf.byteLength);
 
   assertFail(function() {
     ds.readFloat32();
@@ -479,7 +511,7 @@
   ds.readFloat32();
   assertEqual(ds.position , 4000);
   assertEqual(ds.byteLength , 3996);
-  assertEqual(ds.buffer.byteLength , 3996);
+  assertEqual(ds.buffer.byteLength , 3996+64);
   ds.position = 3996;
   // but fails after getting buffer due to _trimAlloc
   assertFail(function() {
@@ -490,7 +522,7 @@
   for (var i = 0; i < 999; i++) {
     assertEqual(0.125 , ds.readFloat32());
   }
-  assertEqual(ds.position , ds.buffer.byteLength);
+  assertEqual(ds.position+64 , ds.buffer.byteLength);
 
   ds.writeFloat32(0.125);
 
@@ -501,7 +533,18 @@
 
   assertEqual(ds.position , 4000);
   assertEqual(ds.byteLength , 4000);
-  assertEqual(ds.buffer.byteLength , ds.position);
+  assertEqual(ds.buffer.byteLength , ds.position+64);
+
+  testType(ds, 'Int32', 4);
+  testType(ds, 'Int16', 2);
+  testType(ds, 'Int8', 1);
+  testType(ds, 'Uint32', 4);
+  testType(ds, 'Uint16', 2);
+  testType(ds, 'Uint8', 1);
+  testType(ds, 'Float32', 4);
+  testType(ds, 'Float64', 8);
+
+  ds = new DataStream(buf, 7);
 
   testType(ds, 'Int32', 4);
   testType(ds, 'Int16', 2);
