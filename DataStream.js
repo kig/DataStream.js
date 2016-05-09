@@ -528,7 +528,7 @@ DataStream.prototype.writeInt32Array = function(arr, e) {
   if (arr instanceof Int32Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapInt32Array(arr.length, e);
   } else {
@@ -549,7 +549,7 @@ DataStream.prototype.writeInt16Array = function(arr, e) {
   if (arr instanceof Int16Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapInt16Array(arr.length, e);
   } else {
@@ -569,7 +569,7 @@ DataStream.prototype.writeInt8Array = function(arr) {
   if (arr instanceof Int8Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapInt8Array(arr.length);
   } else {
@@ -590,7 +590,7 @@ DataStream.prototype.writeUint32Array = function(arr, e) {
   if (arr instanceof Uint32Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapUint32Array(arr.length, e);
   } else {
@@ -611,7 +611,7 @@ DataStream.prototype.writeUint16Array = function(arr, e) {
   if (arr instanceof Uint16Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapUint16Array(arr.length, e);
   } else {
@@ -631,7 +631,7 @@ DataStream.prototype.writeUint8Array = function(arr) {
   if (arr instanceof Uint8Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapUint8Array(arr.length);
   } else {
@@ -652,7 +652,7 @@ DataStream.prototype.writeFloat64Array = function(arr, e) {
   if (arr instanceof Float64Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapFloat64Array(arr.length, e);
   } else {
@@ -673,7 +673,7 @@ DataStream.prototype.writeFloat32Array = function(arr, e) {
   if (arr instanceof Float32Array &&
       (this.byteOffset+this.position) % arr.BYTES_PER_ELEMENT == 0) {
     DataStream.memcpy(this._buffer, this.byteOffset+this.position,
-                      arr.buffer, 0,
+                      arr.buffer, arr.byteOffset,
                       arr.byteLength);
     this.mapFloat32Array(arr.length, e);
   } else {

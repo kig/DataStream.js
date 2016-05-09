@@ -92,6 +92,15 @@
     testTypeArray(ds, t, elen);
   };
 
+  var testSubArray = function (typedArrayConstructor, t, arr) {
+      var typedArr = new typedArrayConstructor(arr);
+      var ds = new DataStream();
+      ds["write" + t + "Array"](typedArr.subarray(1));
+      ds.seek(0);
+      var outSubArray = ds["read" + t + "Array"](arr.length - 1);
+      assertEqualArray(typedArr.subarray(1), outSubArray);
+  }
+
   var testDS = function(i, ds, boff, blen, t, elen, arr) {
     ds.dynamicSize = true;
     ds.endianness = DataStream.LITTLE_ENDIAN;
@@ -103,6 +112,7 @@
     assertEqual(ds.buffer.byteLength , ds.byteLength+boff);
     ds.seek(0);
     var rarr = ds["read"+t+"Array"](arr.length);
+    testSubArray(rarr.constructor, t, arr);
     ds.seek(0);
     var rarr2 = [];
     for (i=0; i<arr.length; i++) {
