@@ -1341,7 +1341,6 @@ DataStream.prototype.readType = function(t, struct) {
         } else {
           if (len == '*') {
             v = [];
-            this.buffer;
             while (true) {
               var p = this.position;
               try {
